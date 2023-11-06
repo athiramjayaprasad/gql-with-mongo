@@ -89,8 +89,9 @@ func WithSort(sorts []Sort) func(q *Query) {
 	}
 }
 
-func NewQuery(opts ...QueryOption) Query {
+func NewQuery(collection string, opts ...QueryOption) Query {
 	q := &Query{}
+	q.collection = collection
 	for _, opt := range opts {
 		opt(q)
 	}
@@ -100,18 +101,18 @@ func NewQuery(opts ...QueryOption) Query {
 func (q Query) MongoQuery() (primitive.D, *options.FindOptions) {
 	filters := bson.D{}
 	filter := bson.E{}
-
+    
 	for _, filterOpt := range q.filterOpts {
 		// assume equals in case filter condition not found
 		if filterOpt.Condition == "" {
-      
+			filter = bson.E{ Key: filterOpt.Key, Value: filterOpt.Value }
 		} else {
 			filter = bson.E{Key: filterOpt.Key, Value: bson.M{string(filterOpt.Condition): filterOpt.Value}}
 		}
 		filters = append(filters, filter)
 	}
-
-	sortOrder := map[string]int{}   
+    
+	sortOrder := map[string]int{}
 	for _, sortOpt := range q.sortOpts {
 		sortOrder[sortOpt.Key] = int(sortOpt.Direction)
 	}
@@ -120,12 +121,12 @@ func (q Query) MongoQuery() (primitive.D, *options.FindOptions) {
 	for _, field := range q.fields {
 		projections[field] = 1
 	}
-    
+
 	opts := options.Find()
 	opts.SetLimit(int64(q.limit))
 	opts.SetSkip(int64(q.offset))
 	opts.Sort = sortOrder
 	opts.SetProjection(projections)
-
+                       
 	return filters, opts 
 }

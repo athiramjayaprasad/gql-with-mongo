@@ -6,35 +6,46 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/athiramjayaprasad/gql-with-mongo/database"
 	"github.com/athiramjayaprasad/gql-with-mongo/graph/model"
+	job "github.com/athiramjayaprasad/gql-with-mongo/graph/model/Job"
 )
-
 
 // CreateJobListing is the resolver for the createJobListing field.
 func (r *mutationResolver) CreateJobListing(ctx context.Context, input model.CreateJobListingInput) (*model.JobListing, error) {
-	return db.CreateJobListing(input), nil      
+	jobDao := job.NewJobDao()
+	job, err := jobDao.Save(input)
+	if err != nil {
+		return nil, err
+	}
+	return job, nil
 }
 
 // UpdateJobListing is the resolver for the updateJobListing field.
 func (r *mutationResolver) UpdateJobListing(ctx context.Context, id string, input model.UpdateJobListingInput) (*model.JobListing, error) {
-	return db.UpdateJobListing(id, input), nil
+	return nil, nil
 }
 
 // DeleteJobListing is the resolver for the deleteJobListing field.
 func (r *mutationResolver) DeleteJobListing(ctx context.Context, id string) (*model.DeleteJobResponse, error) {
-	return db.DeleteJobListing(id), nil
+	return nil, nil
 }
 
 // Jobs is the resolver for the jobs field.
 func (r *queryResolver) Jobs(ctx context.Context) ([]*model.JobListing, error) {
-	return db.GetJobs(), nil
+	jobDao := job.NewJobDao()
+	jobs, err := jobDao.List()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return jobs, nil 
 }
-               
+
 // Job is the resolver for the job field.
 func (r *queryResolver) Job(ctx context.Context, id string) (*model.JobListing, error) {
-	return db.GetJob(id), nil   
+	return nil, nil
 }
 
 // Mutation returns MutationResolver implementation.

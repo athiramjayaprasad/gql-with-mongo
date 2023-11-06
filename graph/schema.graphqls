@@ -11,7 +11,7 @@ type JobListing {
 }
 
 type Query {
-  jobs: [JobListing!]!
+  jobs: [JobListing!]
   job(id: ID!): JobListing!
 }
 
