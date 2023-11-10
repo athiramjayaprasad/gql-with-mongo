@@ -45,7 +45,12 @@ func (r *queryResolver) Jobs(ctx context.Context) ([]*model.JobListing, error) {
 
 // Job is the resolver for the job field.
 func (r *queryResolver) Job(ctx context.Context, id string) (*model.JobListing, error) {
-	return nil, nil
+	jobDao := job.NewJobDao()
+    job, err := jobDao.Retrieve(id)
+	if err != nil {
+		return nil, err
+	}   
+	return job, nil
 }
 
 // Mutation returns MutationResolver implementation.

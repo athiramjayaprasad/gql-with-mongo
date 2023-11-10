@@ -23,7 +23,7 @@ func init() {
 	MongoClient, err = mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		fmt.Println("mongo.Connect() ERROR:", err)
-		
+
 	}
 }
 
@@ -43,7 +43,7 @@ func NewMongoCollection(client *mongo.Client, db string, queryTimeout time.Durat
 }
 
 func (m MongoCollection) List(query Query, ctx context.Context) (*mongo.Cursor, error) {
-	filters, opts := query.MongoQuery()
+	filters, opts := query.ListQuery()
 	dbCollection := m.mongoClient.Database(m.db).Collection(query.collection)
 	data, err := dbCollection.Find(ctx, filters, opts)
 	if err != nil {
@@ -53,16 +53,24 @@ func (m MongoCollection) List(query Query, ctx context.Context) (*mongo.Cursor, 
 	return data, err
 }
 
-func (m MongoCollection) Save (obj interface{}, collectionName string) (interface{}, error) {
+func (m MongoCollection) Save (obj primitive.M, collectionName string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), m.QueryTimeout)
 	defer cancel()
 	dbCollection := m.mongoClient.Database(m.db).Collection(collectionName)
 	result, err := dbCollection.InsertOne(ctx, obj)
 	if err != nil {             
-		return obj, err
+		return "", err
 	}
     
 	id := result.InsertedID.(primitive.ObjectID).String()
 	return id, nil
-    
+}
+
+func (m MongoCollection) Retrieve(query Query, collectionName string) (*mongo.SingleResult) {
+	ctx, cancel := context.WithTimeout(context.Background(), m.QueryTimeout)
+	defer cancel()
+	dbCollection := m.mongoClient.Database(m.db).Collection(collectionName)
+    filters, opts := query.RetrieveQuery() 
+	result := dbCollection.FindOne(ctx, filters, opts)
+	return result 
 }
